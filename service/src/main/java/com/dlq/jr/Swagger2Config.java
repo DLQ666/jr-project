@@ -47,10 +47,10 @@ public class Swagger2Config {
     private ApiInfo webApiInfo(){
 
         return new ApiInfoBuilder()
-                .title("网站-API文档")
-                .description("本文档描述了网站微服务接口定义")
+                .title("门户网站-API文档")
+                .description("本文档描述了门户网站微服务接口定义")
                 .version("1.0")
-                .contact(new Contact("dlqk8s", "http://dlqk8s.top", "dlq096@qq.com"))
+                .contact(new Contact("D奇", "http://dlqk8s.top", "dlq096@qq.com"))
                 .build();
     }
 
@@ -60,7 +60,7 @@ public class Swagger2Config {
                 .title("后台管理系统-API文档")
                 .description("本文档描述了后台管理系统微服务接口定义")
                 .version("1.0")
-                .contact(new Contact("dlqk8s", "http://dlqk8s.top", "dlq096@gmail.com"))
+                .contact(new Contact("D奇", "http://dlqk8s.top", "dlq096@gmail.com"))
                 .build();
     }
 
