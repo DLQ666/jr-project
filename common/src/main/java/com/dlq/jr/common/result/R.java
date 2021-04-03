@@ -61,6 +61,10 @@ public class R {
         this.data.put(key, value);
         return this;
     }
+    public R data(Map<String,Object> map){
+        this.setData(map);
+        return this;
+    }
 
     /**
      * 设置特定的消息
@@ -69,6 +73,16 @@ public class R {
      */
     public R message(String message){
         this.setMessage(message);
+        return this;
+    }
+
+    /**
+     * 设置特定的响应码
+     * @param code
+     * @return
+     */
+    public R code(Integer code){
+        this.setCode(code);
         return this;
     }
 }
