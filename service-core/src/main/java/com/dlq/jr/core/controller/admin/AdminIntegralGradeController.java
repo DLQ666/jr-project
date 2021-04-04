@@ -1,5 +1,6 @@
 package com.dlq.jr.core.controller.admin;
 
+import com.dlq.jr.common.exception.Assert;
 import com.dlq.jr.common.exception.BusinessException;
 import com.dlq.jr.common.result.R;
 import com.dlq.jr.common.result.ResponseEnum;
@@ -47,9 +48,12 @@ public class AdminIntegralGradeController {
     @ApiOperation("新增积分等级")
     @PostMapping("/save")
     public R save(@RequestBody IntegralGrade integralGrade){
-        if (integralGrade.getBorrowAmount() == null){
+
+        /*if (integralGrade.getBorrowAmount() == null){
             throw new BusinessException(ResponseEnum.BORROW_AMOUNT_NULL_ERROR);
-        }
+        }*/
+        Assert.notNull(integralGrade.getBorrowAmount(),ResponseEnum.BORROW_AMOUNT_NULL_ERROR);
+
         boolean save = integralGradeService.save(integralGrade);
         if (save){
             return R.ok().message("保存成功");
