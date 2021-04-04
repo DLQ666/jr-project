@@ -22,4 +22,10 @@ public class UnifiedExceptionHandler {
         log.error(e.getMessage(),e);
         return R.error();
     }
+
+    @ExceptionHandler(value = BadSqlGrammarException.class)
+    public R handleException(BadSqlGrammarException e){
+        log.error(e.getMessage(),e);
+        return R.setResult(ResponseEnum.BAD_SQL_GRAMMAR_ERROR);
+    }
 }
