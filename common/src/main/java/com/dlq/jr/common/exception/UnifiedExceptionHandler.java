@@ -18,14 +18,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class UnifiedExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
-    public R handleException(Exception e){
-        log.error(e.getMessage(),e);
+    public R handleException(Exception e) {
+        log.error(e.getMessage(), e);
         return R.error();
     }
 
     @ExceptionHandler(value = BadSqlGrammarException.class)
-    public R handleException(BadSqlGrammarException e){
-        log.error(e.getMessage(),e);
+    public R handleException(BadSqlGrammarException e) {
+        log.error(e.getMessage(), e);
         return R.setResult(ResponseEnum.BAD_SQL_GRAMMAR_ERROR);
+    }
+
+    @ExceptionHandler(value = BusinessException.class)
+    public R handleException(BusinessException e) {
+        log.error(e.getMessage(), e);
+        return R.error().message(e.getMessage()).code(e.getCode());
     }
 }
