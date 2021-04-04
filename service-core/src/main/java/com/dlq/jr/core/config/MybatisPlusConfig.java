@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @EnableTransactionManagement //事务处理
 @MapperScan("com.dlq.jr.core.mapper")
-@ComponentScan({"com.dlq.jr"})
+@ComponentScan({"com.dlq.jr","com.dlq.jr.common"})
 @Configuration
 public class MybatisPlusConfig {
 
