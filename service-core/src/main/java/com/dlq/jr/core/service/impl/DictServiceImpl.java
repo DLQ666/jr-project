@@ -9,13 +9,17 @@ import com.dlq.jr.core.mapper.DictMapper;
 import com.dlq.jr.core.service.DictService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -28,6 +32,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements DictService {
+
+    @Autowired
+    private RedisTemplate<String,Object> redisTemplate;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -52,14 +59,39 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
 
     @Override
     public List<Dict> listByParentId(Long parentId) {
+
+        try {
+            //首先查询redis中是否存在数据列表
+            List<Dict> dictList = (List<Dict>) redisTemplate.opsForValue().get("jr:core:dictList:" + parentId);
+            if (dictList != null) {
+                log.info("从redis中直接返回数据列表");
+                //如果存在则从redis中直接返回数据列表
+                return dictList;
+            }
+        } catch (Exception e) {
+            log.error("redis服务器异常："+ ExceptionUtils.getStackTrace(e));
+        }
+
+        //如果不存在则直接查询数据库
+        log.info("从redis中直接返回数据列表");
         QueryWrapper<Dict> dictQueryWrapper = new QueryWrapper<>();
-        dictQueryWrapper.eq("parent_id",  parentId);
+        dictQueryWrapper.eq("parent_id", parentId);
         List<Dict> dictList = baseMapper.selectList(dictQueryWrapper);
         //填充 hasChildren 字段
         dictList.forEach(dict -> {
             //判断当前节点是否有子节点，找到当前的dict下级有没有子节点
             dict.setHasChildren(this.hasChildren(dict.getId()));
         });
+
+        try {
+            log.info("将数据存入redis");
+            //将数据存入redis
+            redisTemplate.opsForValue().set("jr:core:dictList:" + parentId, dictList,5, TimeUnit.MINUTES);
+        } catch (Exception e) {
+            log.error("redis服务器异常："+ ExceptionUtils.getStackTrace(e));
+        }
+
+        //返回数据列表
         return dictList;
     }
 
