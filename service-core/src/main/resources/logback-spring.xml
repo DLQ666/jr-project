@@ -70,9 +70,10 @@
 
     <!-- 开发环境和测试环境 -->
     <springProfile name="dev,test">
-        <logger name="com.dlq" level="INFO">
+        <logger name="com.dlq" level="INFO"/>
+        <root level="INFO">
             <appender-ref ref="CONSOLE" />
-        </logger>
+        </root>
     </springProfile>
 
     <!-- 生产环境 -->
