@@ -1,10 +1,12 @@
 package com.dlq.jr.core.controller.admin;
 
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dlq.jr.common.exception.BusinessException;
 import com.dlq.jr.common.result.R;
 import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.core.pojo.dto.ExcelDictDTO;
+import com.dlq.jr.core.pojo.entity.Dict;
 import com.dlq.jr.core.service.DictService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -19,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.util.List;
 
 /**
  *@program: jr-project
@@ -67,5 +70,22 @@ public class AdminDictController {
         }
     }
 
+    /**
+     * 树形数据的两种加载方案
+     *    方案一：非延迟加载
+     *      需要后端返回的数据结构中包含嵌套数据，并且嵌套数据放在children属性中
+     *
+     *    方案二：延迟加载
+     *      不需要后端返回数据中包含嵌套数据，并且要定义布尔属性hasChildren,表示当前节点是否包含子数据
+     *      如果hasChildren为true，就表示当前节点包含子数据
+     *      如果hasChildren为false，就表示当前节点不包含子数据
+     *      如果当前节点包含子数据，那么点击当前节点的时候，就需要通过load方法加载子数据
+     */
+    @ApiOperation("根据上级id获取子节点数据列表")
+    @GetMapping("/listByParentId/{parentId}")
+    public R listByParentId(@PathVariable("parentId")Long parentId){
+        List<Dict> dictList = dictService.listByParentId(parentId);
+        return R.ok().data("list",dictList);
+    }
 
 }
