@@ -32,4 +32,12 @@ public class RedisTemplateTests {
         Dict dict = dictMapper.selectById(1);
         redisTemplate.opsForValue().set("dict", dict, 5, TimeUnit.MINUTES);
     }
+
+    @Test
+    public void getDict() {
+        Dict dict = (Dict) redisTemplate.opsForValue().get("dict");
+        System.out.println(dict);
+        //Dict(id=1, parentId=0, name=全部分类, value=null, dictCode=ROOT, createTime=2021-04-05T14:28:25,
+        // updateTime=2021-04-05T14:28:25, deleted=false, hasChildren=false)
+    }
 }
