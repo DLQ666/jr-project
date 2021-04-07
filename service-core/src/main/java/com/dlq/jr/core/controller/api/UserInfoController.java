@@ -9,16 +9,13 @@ import com.dlq.jr.core.pojo.vo.LoginVo;
 import com.dlq.jr.core.pojo.vo.RegisterVo;
 import com.dlq.jr.core.pojo.vo.UserInfoVo;
 import com.dlq.jr.core.service.UserInfoService;
+import com.dlq.jr.util.JwtUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -82,6 +79,18 @@ public class UserInfoController {
         String ip = request.getRemoteAddr();
         UserInfoVo userInfoVo = userInfoService.login(loginVo, ip);
         return R.ok().data("userInfo", userInfoVo);
+    }
+
+    @ApiOperation("校验令牌")
+    @GetMapping("/checkToken")
+    public R checkToken(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        boolean result = JwtUtils.checkToken(token);
+        if (result) {
+            return R.ok();
+        } else {
+            return R.setResult(ResponseEnum.LOGIN_AUTH_ERROR);
+        }
     }
 }
 
