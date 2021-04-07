@@ -51,5 +51,13 @@ public class AdminUserInfoController {
         return R.ok().data("pageModel", pageModel);
     }
 
+    @ApiOperation("锁定和解锁")
+    @PutMapping("/lock/{id}/{status}")
+    public R lock(@PathVariable("id") Long id,
+                  @PathVariable("status") Integer status) {
+        userInfoService.lock(id, status);
+        return R.ok().message(status == 1 ? "解锁成功！" : "锁定成功！");
+    }
+
 }
 

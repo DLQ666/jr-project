@@ -141,4 +141,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return baseMapper.selectPage(pageParam, userInfoQueryWrapper);
     }
+
+    @Override
+    public void lock(Long id, Integer status) {
+        if (status.intValue() == 0 || status.intValue() ==1){
+            UserInfo userInfo = baseMapper.selectById(id);
+            userInfo.setStatus(status);
+            baseMapper.updateById(userInfo);
+        }
+    }
 }
