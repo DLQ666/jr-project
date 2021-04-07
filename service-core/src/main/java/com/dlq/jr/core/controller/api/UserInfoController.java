@@ -92,5 +92,12 @@ public class UserInfoController {
             return R.setResult(ResponseEnum.LOGIN_AUTH_ERROR);
         }
     }
+
+    @ApiOperation("校验手机号是否注册")
+    @GetMapping("/checkMobile/{mobile}")
+    public R checkMobile(@PathVariable("mobile") String mobile){
+        boolean result = userInfoService.checkMobile(mobile);
+        return R.ok().data("isExist", result);
+    }
 }
 
