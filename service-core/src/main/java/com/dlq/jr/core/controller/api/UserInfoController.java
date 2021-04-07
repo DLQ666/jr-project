@@ -95,9 +95,8 @@ public class UserInfoController {
 
     @ApiOperation("校验手机号是否注册")
     @GetMapping("/checkMobile/{mobile}")
-    public R checkMobile(@PathVariable("mobile") String mobile){
-        boolean result = userInfoService.checkMobile(mobile);
-        return R.ok().data("isExist", result);
+    public boolean checkMobile(@PathVariable("mobile") String mobile){
+        return userInfoService.checkMobile(mobile);
     }
 }
 
