@@ -49,7 +49,7 @@ public class ApiSmsController {
         String code = RandomUtils.getFourBitRandom();
         HashMap<String, Object> map = new HashMap<>();
         map.put("checkcode", code);
-        smsService.send(mobile, SmsProperties.TEMPLATE_CODE, map);
+        //smsService.send(mobile, SmsProperties.TEMPLATE_CODE, map);
 
         //将验证码存入redis
         redisTemplate.opsForValue().set("jr:sms:code:" + mobile, code, 2, TimeUnit.HOURS);
