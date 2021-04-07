@@ -1,12 +1,15 @@
 package com.dlq.jr.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.dlq.jr.common.exception.Assert;
 import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.core.pojo.entity.UserAccount;
 import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.mapper.UserInfoMapper;
 import com.dlq.jr.core.pojo.entity.UserLoginRecord;
+import com.dlq.jr.core.pojo.query.UserInfoQuery;
 import com.dlq.jr.core.pojo.vo.LoginVo;
 import com.dlq.jr.core.pojo.vo.RegisterVo;
 import com.dlq.jr.core.pojo.vo.UserInfoVo;
@@ -108,5 +111,34 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //返回
         return userInfoVo;
+    }
+
+    @Override
+    public IPage<UserInfo> listPage(IPage<UserInfo> pageParam, UserInfoQuery userInfoQuery) {
+
+        if (userInfoQuery == null) {
+            return baseMapper.selectPage(pageParam, null);
+        }
+
+        String mobile = userInfoQuery.getMobile();
+        Integer status = userInfoQuery.getStatus();
+        Integer userType = userInfoQuery.getUserType();
+        QueryWrapper<UserInfo> userInfoQueryWrapper = new QueryWrapper<>();
+        userInfoQueryWrapper
+                .eq(StringUtils.isNotBlank(mobile), "mobile", mobile)
+                .eq(status != null, "status", status)
+                .eq(userType != null, "user_type", userType);
+        //有点麻烦
+        /*if (StringUtils.isNotBlank(mobile)){
+            userInfoVoQueryWrapper.eq("mobile", mobile);
+        }
+        if (status != null){
+            userInfoVoQueryWrapper.eq("status", status);
+        }
+        if (userType != null){
+            userInfoVoQueryWrapper.eq("user_type", userType);
+        }*/
+
+        return baseMapper.selectPage(pageParam, userInfoQueryWrapper);
     }
 }
