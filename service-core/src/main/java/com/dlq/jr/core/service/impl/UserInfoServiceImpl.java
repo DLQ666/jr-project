@@ -6,10 +6,15 @@ import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.core.pojo.entity.UserAccount;
 import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.mapper.UserInfoMapper;
+import com.dlq.jr.core.pojo.entity.UserLoginRecord;
+import com.dlq.jr.core.pojo.vo.LoginVo;
 import com.dlq.jr.core.pojo.vo.RegisterVo;
+import com.dlq.jr.core.pojo.vo.UserInfoVo;
 import com.dlq.jr.core.service.UserAccountService;
 import com.dlq.jr.core.service.UserInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dlq.jr.core.service.UserLoginRecordService;
+import com.dlq.jr.util.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,6 +35,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Autowired
     private UserAccountService userAccountService;
+    @Autowired
+    private UserLoginRecordService userLoginRecordService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -59,5 +66,47 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserAccount userAccount = new UserAccount();
         userAccount.setUserId(userInfo.getId());
         userAccountService.save(userAccount);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public UserInfoVo login(LoginVo loginVo, String ip) {
+        //判断登陆用户是否存在
+        QueryWrapper<UserInfo> userInfoQueryWrapper = new QueryWrapper<>();
+        userInfoQueryWrapper
+                .eq("mobile", loginVo.getMobile())
+                .eq("user_type", loginVo.getUserType());
+        UserInfo userInfo = baseMapper.selectOne(userInfoQueryWrapper);
+
+        Assert.notNull(userInfo, ResponseEnum.LOGIN_MOBILE_ERROR);
+
+        //密码是否正确
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        boolean matches = encoder.matches(loginVo.getPassword(), userInfo.getPassword());
+        Assert.isTrue(matches, ResponseEnum.LOGIN_PASSWORD_ERROR);
+
+        //用户是否被禁用
+        Assert.equals(userInfo.getStatus(), UserInfo.STATUS_NORMAL, ResponseEnum.LOGIN_LOKED_ERROR);
+
+        //记录用户登录日志
+        UserLoginRecord userLoginRecord = new UserLoginRecord();
+        userLoginRecord.setUserId(userInfo.getId());
+        userLoginRecord.setIp(ip);
+        userLoginRecordService.save(userLoginRecord);
+
+        //生成token
+        String token = JwtUtils.createToken(userInfo.getId(), userInfo.getName());
+
+        //组装 UserInfoVo
+        UserInfoVo userInfoVo = new UserInfoVo();
+        userInfoVo.setToken(token);
+        userInfoVo.setName(userInfo.getName());
+        userInfoVo.setNickName(userInfo.getNickName());
+        userInfoVo.setHeadImg(userInfo.getHeadImg());
+        userInfoVo.setMobile(userInfo.getMobile());
+        userInfoVo.setUserType(userInfo.getUserType());
+
+        //返回
+        return userInfoVo;
     }
 }
