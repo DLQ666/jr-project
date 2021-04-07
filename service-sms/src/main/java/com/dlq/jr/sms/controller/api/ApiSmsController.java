@@ -5,6 +5,7 @@ import com.dlq.jr.common.result.R;
 import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.common.util.RandomUtils;
 import com.dlq.jr.common.util.RegexValidateUtils;
+import com.dlq.jr.sms.feign.CoreFeignService;
 import com.dlq.jr.sms.service.SmsService;
 import com.dlq.jr.sms.util.SmsProperties;
 import io.swagger.annotations.Api;
@@ -36,6 +37,8 @@ public class ApiSmsController {
     private SmsService smsService;
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
+    @Autowired
+    private CoreFeignService coreFeignService;
 
     @ApiOperation("获取验证码")
     @GetMapping("/send/{mobile}")
@@ -45,6 +48,11 @@ public class ApiSmsController {
         Assert.notEmpty(mobile, ResponseEnum.MOBILE_NULL_ERROR);
         //校验手机号码是否合法
         Assert.isTrue(RegexValidateUtils.checkCellphone(mobile), ResponseEnum.MOBILE_ERROR);
+
+        //远程调用 service-core 判断手机号是否已经注册 接口
+        boolean result = coreFeignService.checkMobile(mobile);
+        log.info("result = " + result);
+        Assert.isTrue(!result, ResponseEnum.MOBILE_EXIST_ERROR);
 
         String code = RandomUtils.getFourBitRandom();
         HashMap<String, Object> map = new HashMap<>();
