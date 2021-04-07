@@ -78,7 +78,7 @@ public class AdminIntegralGradeController {
         }
     }
 
-    @ApiOperation("新增积分等级")
+    @ApiOperation("修改积分等级")
     @PutMapping("/update")
     public R updateById(@RequestBody IntegralGrade integralGrade){
         boolean update = integralGradeService.updateById(integralGrade);
