@@ -9,11 +9,15 @@ import com.dlq.jr.core.hfb.HfbConst;
 import com.dlq.jr.core.hfb.RequestHelper;
 import com.dlq.jr.core.pojo.entity.UserBind;
 import com.dlq.jr.core.mapper.UserBindMapper;
+import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.pojo.vo.UserBindVo;
 import com.dlq.jr.core.service.UserBindService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dlq.jr.core.service.UserInfoService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +32,9 @@ import java.util.Map;
  */
 @Service
 public class UserBindServiceImpl extends ServiceImpl<UserBindMapper, UserBind> implements UserBindService {
+
+    @Autowired
+    private UserInfoService userInfoService;
 
     /**
      * 账户绑定提交数据
@@ -75,5 +82,30 @@ public class UserBindServiceImpl extends ServiceImpl<UserBindMapper, UserBind> i
 
         //生成动态表单字符串
         return FormHelper.buildForm(HfbConst.USERBIND_URL, map);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void notify(Map<String, Object> paramMap) {
+        String bindCode = (String) paramMap.get("bindCode");
+        String userId = (String) paramMap.get("agentUserId");
+
+        //根据userId查询user_bind记录
+        QueryWrapper<UserBind> userBindQueryWrapper = new QueryWrapper<>();
+        userBindQueryWrapper.eq("user_id", userId);
+
+        //更新用户绑定表
+        UserBind userBind = baseMapper.selectOne(userBindQueryWrapper);
+        userBind.setBindCode(bindCode);
+        userBind.setStatus(UserBindEnum.BIND_OK.getStatus());
+        baseMapper.updateById(userBind);
+
+        //更新用户绑定表
+        UserInfo userInfo = userInfoService.getById(userId);
+        userInfo.setBindCode(bindCode);
+        userInfo.setName(userBind.getName());
+        userInfo.setIdCard(userBind.getIdCard());
+        userInfo.setBindStatus(UserBindEnum.BIND_OK.getStatus());
+        userInfoService.updateById(userInfo);
     }
 }
