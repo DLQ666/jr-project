@@ -15,4 +15,6 @@ import com.dlq.jr.core.pojo.vo.BorrowerVo;
 public interface BorrowerService extends IService<Borrower> {
 
     void saveBorrowerVoByUserId(BorrowerVo borrowerVo, Long userId);
+
+    Integer getStatusByUserId(Long userId);
 }

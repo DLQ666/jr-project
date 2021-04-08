@@ -64,4 +64,15 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
         userInfo.setBorrowAuthStatus(BorrowerStatusEnum.AUTH_RUN.getStatus());
         userInfoService.updateById(userInfo);
     }
+
+    @Override
+    public Integer getStatusByUserId(Long userId) {
+        QueryWrapper<Borrower> borrowerQueryWrapper = new QueryWrapper<>();
+        borrowerQueryWrapper.select("status").eq("user_id",userId);
+        List<Object> objects = baseMapper.selectObjs(borrowerQueryWrapper);
+        if (objects.size() == 0){
+            return BorrowerStatusEnum.NO_AUTH.getStatus();
+        }
+        return (Integer)objects.get(0);
+    }
 }
