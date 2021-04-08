@@ -2,6 +2,7 @@ package com.dlq.jr.core.service;
 
 import com.dlq.jr.core.pojo.entity.Borrower;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dlq.jr.core.pojo.vo.BorrowerVo;
 
 /**
  * <p>
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface BorrowerService extends IService<Borrower> {
 
+    void saveBorrowerVoByUserId(BorrowerVo borrowerVo, Long userId);
 }
