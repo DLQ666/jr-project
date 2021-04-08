@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequestMapping("/admin/core/borrower")
-public class AdminBorrowInfoController {
+public class AdminBorrowController {
 
     @Autowired
     private BorrowerService borrowerService;
