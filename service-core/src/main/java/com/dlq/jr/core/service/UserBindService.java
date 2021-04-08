@@ -2,6 +2,7 @@ package com.dlq.jr.core.service;
 
 import com.dlq.jr.core.pojo.entity.UserBind;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dlq.jr.core.pojo.vo.UserBindVo;
 
 /**
  * <p>
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserBindService extends IService<UserBind> {
 
+    String commitBindUser(UserBindVo userBindVo, Long userId);
 }
