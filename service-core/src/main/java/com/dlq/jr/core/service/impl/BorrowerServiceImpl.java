@@ -1,6 +1,9 @@
 package com.dlq.jr.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.core.enums.BorrowerStatusEnum;
 import com.dlq.jr.core.mapper.UserInfoMapper;
 import com.dlq.jr.core.pojo.entity.Borrower;
@@ -74,5 +77,18 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
             return BorrowerStatusEnum.NO_AUTH.getStatus();
         }
         return (Integer)objects.get(0);
+    }
+
+    @Override
+    public IPage<Borrower> listPage(Page<Borrower> pageParam, String keyword) {
+        if (StringUtils.isBlank(keyword)) {
+            return baseMapper.selectPage(pageParam, null);
+        }
+        QueryWrapper<Borrower> borrowerQueryWrapper = new QueryWrapper<>();
+        borrowerQueryWrapper.like("name", keyword)
+                .or().like("mobile", keyword)
+                .or().like("id_card", keyword)
+                .orderByDesc("id");
+        return baseMapper.selectPage(pageParam, borrowerQueryWrapper);
     }
 }
