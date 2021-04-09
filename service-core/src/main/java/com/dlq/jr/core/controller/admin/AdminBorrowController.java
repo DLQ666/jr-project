@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.common.result.R;
 import com.dlq.jr.core.pojo.entity.Borrower;
+import com.dlq.jr.core.pojo.vo.BorrowerApprovalVo;
 import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
 import com.dlq.jr.core.service.BorrowerService;
 import io.swagger.annotations.Api;
@@ -42,5 +43,12 @@ public class AdminBorrowController {
     public R show(@PathVariable Long id) {
         BorrowerDetailVo borrowerDetailVo = borrowerService.getBorrowerDetailVoById(id);
         return R.ok().data("borrowerDetailVo", borrowerDetailVo);
+    }
+
+    @ApiOperation("借款额度审批")
+    @PostMapping("/approval")
+    public R approval(@RequestBody BorrowerApprovalVo borrowerApprovalVo){
+        borrowerService.approval(borrowerApprovalVo);
+        return R.ok().message("审批完成");
     }
 }

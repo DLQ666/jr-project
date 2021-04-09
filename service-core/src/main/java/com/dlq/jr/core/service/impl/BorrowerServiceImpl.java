@@ -6,19 +6,19 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.core.enums.BorrowerStatusEnum;
 import com.dlq.jr.core.enums.DictEnum;
+import com.dlq.jr.core.enums.IntegralEnum;
 import com.dlq.jr.core.mapper.UserInfoMapper;
 import com.dlq.jr.core.pojo.entity.Borrower;
 import com.dlq.jr.core.mapper.BorrowerMapper;
 import com.dlq.jr.core.pojo.entity.BorrowerAttach;
 import com.dlq.jr.core.pojo.entity.UserInfo;
+import com.dlq.jr.core.pojo.entity.UserIntegral;
+import com.dlq.jr.core.pojo.vo.BorrowerApprovalVo;
 import com.dlq.jr.core.pojo.vo.BorrowerAttachVo;
 import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
 import com.dlq.jr.core.pojo.vo.BorrowerVo;
-import com.dlq.jr.core.service.BorrowerAttachService;
-import com.dlq.jr.core.service.BorrowerService;
+import com.dlq.jr.core.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.dlq.jr.core.service.DictService;
-import com.dlq.jr.core.service.UserInfoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,6 +44,8 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
     private BorrowerAttachService borrowerAttachService;
     @Autowired
     private DictService dictService;
+    @Autowired
+    private UserIntegralService userIntegralService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -133,5 +135,90 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
         List<BorrowerAttachVo> borrowerAttachVoList = borrowerAttachService.selectBorrowerAttachVoList(id);
         borrowerDetailVo.setBorrowerAttachVoList(borrowerAttachVoList);
         return borrowerDetailVo;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void approval(BorrowerApprovalVo borrowerApprovalVo) {
+        //获取借款额度申请人id
+        Long borrowerId = borrowerApprovalVo.getBorrowerId();
+        //获取额度借款申请人对象
+        Borrower borrower = baseMapper.selectById(borrowerId);
+        //设置审核状态
+        borrower.setStatus(borrowerApprovalVo.getStatus());
+        baseMapper.updateById(borrower);
+
+        //获取用户id
+        Long userId = borrower.getUserId();
+        //获取用户对象
+        UserInfo userInfo = userInfoService.getById(userId);
+        //获取用户原始积分
+        Integer integral = userInfo.getIntegral();
+
+        if (BorrowerStatusEnum.AUTH_OK.getStatus().equals(borrowerApprovalVo.getStatus())) {
+            //查询是否已经添加过积分信息---添加过则不添加
+            QueryWrapper<UserIntegral> userIntegralQueryWrapper = new QueryWrapper<>();
+            userIntegralQueryWrapper.eq("user_id", userId);
+            List<UserIntegral> userIntegrals = userIntegralService.list(userIntegralQueryWrapper);
+
+            for (UserIntegral existIntegral : userIntegrals) {
+                if (!IntegralEnum.BORROWER_INFO.getMsg().equals(existIntegral.getContent())) {
+                    //给用户计算 基本信息积分
+                    UserIntegral userIntegral = new UserIntegral();
+                    userIntegral.setUserId(userId);
+                    userIntegral.setIntegral(borrowerApprovalVo.getInfoIntegral());
+                    userIntegral.setContent(IntegralEnum.BORROWER_INFO.getMsg());
+                    userIntegralService.save(userIntegral);
+                    integral += borrowerApprovalVo.getInfoIntegral();
+                }
+            }
+
+            //身份证积分
+            if (borrowerApprovalVo.getIsIdCardOk()) {
+                for (UserIntegral existIntegral : userIntegrals) {
+                    if (!IntegralEnum.BORROWER_IDCARD.getMsg().equals(existIntegral.getContent())) {
+                        UserIntegral userIdcardIntegral = new UserIntegral();
+                        userIdcardIntegral.setUserId(borrower.getUserId());
+                        userIdcardIntegral.setIntegral(IntegralEnum.BORROWER_IDCARD.getIntegral());
+                        userIdcardIntegral.setContent(IntegralEnum.BORROWER_IDCARD.getMsg());
+                        userIntegralService.save(userIdcardIntegral);
+                        integral += IntegralEnum.BORROWER_IDCARD.getIntegral();
+                    }
+                }
+            }
+            //车辆积分
+            if (borrowerApprovalVo.getIsCarOk()) {
+                for (UserIntegral existIntegral : userIntegrals) {
+                    if (!IntegralEnum.BORROWER_CAR.getMsg().equals(existIntegral.getContent())) {
+                        UserIntegral userIntegral = new UserIntegral();
+                        userIntegral.setUserId(borrower.getUserId());
+                        userIntegral.setIntegral(IntegralEnum.BORROWER_CAR.getIntegral());
+                        userIntegral.setContent(IntegralEnum.BORROWER_CAR.getMsg());
+                        userIntegralService.save(userIntegral);
+                        integral += IntegralEnum.BORROWER_CAR.getIntegral();
+                    }
+                }
+            }
+            //房产信息
+            if (borrowerApprovalVo.getIsHouseOk()) {
+                for (UserIntegral existIntegral : userIntegrals) {
+                    if (!IntegralEnum.BORROWER_HOUSE.getMsg().equals(existIntegral.getContent())) {
+                        UserIntegral userIntegral = new UserIntegral();
+                        userIntegral.setUserId(borrower.getUserId());
+                        userIntegral.setIntegral(IntegralEnum.BORROWER_HOUSE.getIntegral());
+                        userIntegral.setContent(IntegralEnum.BORROWER_HOUSE.getMsg());
+                        userIntegralService.save(userIntegral);
+                        integral += IntegralEnum.BORROWER_HOUSE.getIntegral();
+                    }
+                }
+            }
+        }
+
+        //设置用户总积分
+        userInfo.setIntegral(integral);
+        //修改审核状态
+        userInfo.setBorrowAuthStatus(borrowerApprovalVo.getStatus());
+        //更新userInfo
+        userInfoService.updateById(userInfo);
     }
 }
