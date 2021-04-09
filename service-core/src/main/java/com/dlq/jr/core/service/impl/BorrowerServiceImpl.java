@@ -189,59 +189,60 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
         if (BorrowerStatusEnum.AUTH_OK.getStatus().equals(borrowerApprovalVo.getStatus())) {
             //查询是否已经添加过积分信息---添加过则不添加
             QueryWrapper<UserIntegral> userIntegralQueryWrapper = new QueryWrapper<>();
-            userIntegralQueryWrapper.eq("user_id", userId);
-            List<UserIntegral> userIntegrals = userIntegralService.list(userIntegralQueryWrapper);
-
-            for (UserIntegral existIntegral : userIntegrals) {
-                if (!IntegralEnum.BORROWER_INFO.getMsg().equals(existIntegral.getContent())) {
-                    //给用户计算 基本信息积分
-                    UserIntegral userIntegral = new UserIntegral();
-                    userIntegral.setUserId(userId);
-                    userIntegral.setIntegral(borrowerApprovalVo.getInfoIntegral());
-                    userIntegral.setContent(IntegralEnum.BORROWER_INFO.getMsg());
-                    userIntegralService.save(userIntegral);
-                    integral += borrowerApprovalVo.getInfoIntegral();
-                }
+            userIntegralQueryWrapper.eq("user_id", userId)
+                    .eq("content", IntegralEnum.BORROWER_INFO.getMsg());
+            UserIntegral userIntegralInfo = userIntegralService.getOne(userIntegralQueryWrapper);
+            if (userIntegralInfo == null) {
+                //给用户计算 基本信息积分
+                UserIntegral userIntegral = new UserIntegral();
+                userIntegral.setUserId(userId);
+                userIntegral.setIntegral(borrowerApprovalVo.getInfoIntegral());
+                userIntegral.setContent(IntegralEnum.BORROWER_INFO.getMsg());
+                userIntegralService.save(userIntegral);
+                integral += borrowerApprovalVo.getInfoIntegral();
             }
+
+            userIntegralQueryWrapper = new QueryWrapper<>();
+            userIntegralQueryWrapper.eq("user_id", userId)
+                    .eq("content", IntegralEnum.BORROWER_IDCARD.getMsg());
+            UserIntegral userIntegralIdcard = userIntegralService.getOne(userIntegralQueryWrapper);
 
             //身份证积分
-            if (borrowerApprovalVo.getIsIdCardOk()) {
-                for (UserIntegral existIntegral : userIntegrals) {
-                    if (!IntegralEnum.BORROWER_IDCARD.getMsg().equals(existIntegral.getContent())) {
-                        UserIntegral userIdcardIntegral = new UserIntegral();
-                        userIdcardIntegral.setUserId(borrower.getUserId());
-                        userIdcardIntegral.setIntegral(IntegralEnum.BORROWER_IDCARD.getIntegral());
-                        userIdcardIntegral.setContent(IntegralEnum.BORROWER_IDCARD.getMsg());
-                        userIntegralService.save(userIdcardIntegral);
-                        integral += IntegralEnum.BORROWER_IDCARD.getIntegral();
-                    }
-                }
+            if (userIntegralIdcard == null) {
+                UserIntegral userIdcardIntegral = new UserIntegral();
+                userIdcardIntegral.setUserId(borrower.getUserId());
+                userIdcardIntegral.setIntegral(IntegralEnum.BORROWER_IDCARD.getIntegral());
+                userIdcardIntegral.setContent(IntegralEnum.BORROWER_IDCARD.getMsg());
+                userIntegralService.save(userIdcardIntegral);
+                integral += IntegralEnum.BORROWER_IDCARD.getIntegral();
             }
+
+            userIntegralQueryWrapper = new QueryWrapper<>();
+            userIntegralQueryWrapper.eq("user_id", userId)
+                    .eq("content", IntegralEnum.BORROWER_CAR.getMsg());
+            UserIntegral userIntegralCar = userIntegralService.getOne(userIntegralQueryWrapper);
             //车辆积分
-            if (borrowerApprovalVo.getIsCarOk()) {
-                for (UserIntegral existIntegral : userIntegrals) {
-                    if (!IntegralEnum.BORROWER_CAR.getMsg().equals(existIntegral.getContent())) {
-                        UserIntegral userIntegral = new UserIntegral();
-                        userIntegral.setUserId(borrower.getUserId());
-                        userIntegral.setIntegral(IntegralEnum.BORROWER_CAR.getIntegral());
-                        userIntegral.setContent(IntegralEnum.BORROWER_CAR.getMsg());
-                        userIntegralService.save(userIntegral);
-                        integral += IntegralEnum.BORROWER_CAR.getIntegral();
-                    }
-                }
+            if (userIntegralCar == null) {
+                UserIntegral userIntegral = new UserIntegral();
+                userIntegral.setUserId(borrower.getUserId());
+                userIntegral.setIntegral(IntegralEnum.BORROWER_CAR.getIntegral());
+                userIntegral.setContent(IntegralEnum.BORROWER_CAR.getMsg());
+                userIntegralService.save(userIntegral);
+                integral += IntegralEnum.BORROWER_CAR.getIntegral();
             }
+
+            userIntegralQueryWrapper = new QueryWrapper<>();
+            userIntegralQueryWrapper.eq("user_id", userId)
+                    .eq("content", IntegralEnum.BORROWER_HOUSE.getMsg());
+            UserIntegral userIntegralHouse = userIntegralService.getOne(userIntegralQueryWrapper);
             //房产信息
-            if (borrowerApprovalVo.getIsHouseOk()) {
-                for (UserIntegral existIntegral : userIntegrals) {
-                    if (!IntegralEnum.BORROWER_HOUSE.getMsg().equals(existIntegral.getContent())) {
-                        UserIntegral userIntegral = new UserIntegral();
-                        userIntegral.setUserId(borrower.getUserId());
-                        userIntegral.setIntegral(IntegralEnum.BORROWER_HOUSE.getIntegral());
-                        userIntegral.setContent(IntegralEnum.BORROWER_HOUSE.getMsg());
-                        userIntegralService.save(userIntegral);
-                        integral += IntegralEnum.BORROWER_HOUSE.getIntegral();
-                    }
-                }
+            if (userIntegralHouse == null) {
+                UserIntegral userIntegral = new UserIntegral();
+                userIntegral.setUserId(borrower.getUserId());
+                userIntegral.setIntegral(IntegralEnum.BORROWER_HOUSE.getIntegral());
+                userIntegral.setContent(IntegralEnum.BORROWER_HOUSE.getMsg());
+                userIntegralService.save(userIntegral);
+                integral += IntegralEnum.BORROWER_HOUSE.getIntegral();
             }
         }
 
