@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.dlq.jr.core.pojo.vo.BorrowerApprovalVo;
 import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
 import com.dlq.jr.core.pojo.vo.BorrowerVo;
+import com.dlq.jr.core.pojo.vo.RevertBorrowerVo;
 
 /**
  * <p>
@@ -27,4 +28,6 @@ public interface BorrowerService extends IService<Borrower> {
     BorrowerDetailVo getBorrowerDetailVoById(Long id);
 
     void approval(BorrowerApprovalVo borrowerApprovalVo);
+
+    RevertBorrowerVo selectBorrowerVoByUserId(Long userId);
 }
