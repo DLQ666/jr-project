@@ -5,15 +5,19 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.core.enums.BorrowerStatusEnum;
+import com.dlq.jr.core.enums.DictEnum;
 import com.dlq.jr.core.mapper.UserInfoMapper;
 import com.dlq.jr.core.pojo.entity.Borrower;
 import com.dlq.jr.core.mapper.BorrowerMapper;
 import com.dlq.jr.core.pojo.entity.BorrowerAttach;
 import com.dlq.jr.core.pojo.entity.UserInfo;
+import com.dlq.jr.core.pojo.vo.BorrowerAttachVo;
+import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
 import com.dlq.jr.core.pojo.vo.BorrowerVo;
 import com.dlq.jr.core.service.BorrowerAttachService;
 import com.dlq.jr.core.service.BorrowerService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dlq.jr.core.service.DictService;
 import com.dlq.jr.core.service.UserInfoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +42,8 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
     private UserInfoService userInfoService;
     @Autowired
     private BorrowerAttachService borrowerAttachService;
+    @Autowired
+    private DictService dictService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -59,7 +65,7 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
         //保存附件
         List<BorrowerAttach> borrowerAttachList = borrowerVo.getBorrowerAttachList();
         borrowerAttachList.forEach(borrowerAttach -> {
-            borrowerAttach.setBorrowerId(userId);
+            borrowerAttach.setBorrowerId(borrower.getId());
             borrowerAttachService.save(borrowerAttach);
         });
 
@@ -90,5 +96,42 @@ public class BorrowerServiceImpl extends ServiceImpl<BorrowerMapper, Borrower> i
                 .or().like("id_card", keyword)
                 .orderByDesc("id");
         return baseMapper.selectPage(pageParam, borrowerQueryWrapper);
+    }
+
+    @Override
+    public BorrowerDetailVo getBorrowerDetailVoById(Long id) {
+        //根据id查询借款人信息
+        Borrower borrower = baseMapper.selectById(id);
+        if (borrower == null){
+            return null;
+        }
+        BorrowerDetailVo borrowerDetailVo = new BorrowerDetailVo();
+        //填充基本借款人信息
+        BeanUtils.copyProperties(borrower, borrowerDetailVo);
+
+        //性别
+        borrowerDetailVo.setSex(borrower.getSex() == 1 ? "男" : "女");
+        //婚否
+        borrowerDetailVo.setMarry(borrower.getMarry() ? "是" : "否");
+        //下拉列表内容
+        borrowerDetailVo.setEducation(dictService.getNameByParentDictCodeAndValue(
+                DictEnum.EDUCATION.getDictCode(), borrower.getEducation()));
+        borrowerDetailVo.setIndustry(dictService.getNameByParentDictCodeAndValue(
+                DictEnum.INDUSTRY.getDictCode(), borrower.getIndustry()));
+        borrowerDetailVo.setIncome(dictService.getNameByParentDictCodeAndValue(
+                DictEnum.INCOME.getDictCode(), borrower.getIncome()));
+        borrowerDetailVo.setReturnSource(dictService.getNameByParentDictCodeAndValue(
+                DictEnum.RETURN_SOURCE.getDictCode(), borrower.getReturnSource()));
+        borrowerDetailVo.setContactsRelation(dictService.getNameByParentDictCodeAndValue(
+                DictEnum.RELATION.getDictCode(), borrower.getContactsRelation()));
+
+        //审批状态
+        String status = BorrowerStatusEnum.getMsgByStatus(borrower.getStatus());
+        borrowerDetailVo.setStatus(status);
+
+        //附件列表
+        List<BorrowerAttachVo> borrowerAttachVoList = borrowerAttachService.selectBorrowerAttachVoList(id);
+        borrowerDetailVo.setBorrowerAttachVoList(borrowerAttachVoList);
+        return borrowerDetailVo;
     }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.core.pojo.entity.Borrower;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
 import com.dlq.jr.core.pojo.vo.BorrowerVo;
 
 /**
@@ -21,4 +22,6 @@ public interface BorrowerService extends IService<Borrower> {
     Integer getStatusByUserId(Long userId);
 
     IPage<Borrower> listPage(Page<Borrower> pageParam, String keyword);
+
+    BorrowerDetailVo getBorrowerDetailVoById(Long id);
 }
