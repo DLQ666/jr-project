@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * <p>
@@ -78,5 +79,16 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
         //设置借款申请状态
         borrowInfo.setStatus(BorrowInfoStatusEnum.CHECK_RUN.getStatus());
         baseMapper.insert(borrowInfo);
+    }
+
+    @Override
+    public Integer getStatusByUserId(Long userId) {
+        QueryWrapper<BorrowInfo> borrowInfoQueryWrapper = new QueryWrapper<>();
+        borrowInfoQueryWrapper.select("status").eq("user_id", userId);
+        List<Object> objects = baseMapper.selectObjs(borrowInfoQueryWrapper);
+        if (objects.size() == 0){
+            return BorrowInfoStatusEnum.NO_AUTH.getStatus();
+        }
+        return (Integer) objects.get(0);
     }
 }
