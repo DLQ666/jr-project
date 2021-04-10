@@ -2,16 +2,14 @@ package com.dlq.jr.core.controller.api;
 
 
 import com.dlq.jr.common.result.R;
+import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.dlq.jr.core.service.BorrowInfoService;
 import com.dlq.jr.util.JwtUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -42,5 +40,13 @@ public class BorrowInfoController {
         return R.ok().data("borrowAmount", borrowAmount);
     }
 
+    @ApiOperation("提交借款申请")
+    @PostMapping("/auth/save")
+    public R save(@RequestBody BorrowInfo borrowInfo, HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Long userId = JwtUtils.getUserId(token);
+        borrowInfoService.saveBorrowInfo(borrowInfo, userId);
+        return R.ok().message("提交成功");
+    }
 }
 
