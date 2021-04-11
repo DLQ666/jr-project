@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * <p>
  * 标的准备表 前端控制器
@@ -33,6 +35,13 @@ public class AdminLendController {
         IPage<Lend> pageParam = new Page<>(page, limit);
         IPage<Lend> pageModel = lendService.selectList(pageParam);
         return R.ok().data("list", pageModel);
+    }
+
+    @ApiOperation("获取标的信息")
+    @GetMapping("/show/{id}")
+    public R show(@PathVariable Long id) {
+        Map<String, Object> result = lendService.getLendDetail(id);
+        return R.ok().data("lendDetail", result);
     }
 }
 

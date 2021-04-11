@@ -1,11 +1,15 @@
 package com.dlq.jr.core.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.dlq.jr.core.enums.LendStatusEnum;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
+import com.dlq.jr.core.pojo.entity.Borrower;
 import com.dlq.jr.core.pojo.entity.Lend;
 import com.dlq.jr.core.mapper.LendMapper;
 import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
+import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
+import com.dlq.jr.core.service.BorrowerService;
 import com.dlq.jr.core.service.DictService;
 import com.dlq.jr.core.service.LendService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,6 +21,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -31,6 +37,8 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
 
     @Autowired
     private DictService dictService;
+    @Autowired
+    private BorrowerService borrowerService;
 
     @Override
     public void createlend(BorrowInfoApprovalVo borrowInfoApprovalVo, BorrowInfo borrowInfo) {
@@ -80,6 +88,26 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
         IPage<Lend> lendIPage = baseMapper.selectPage(pageParam, null);
         lendIPage.getRecords().forEach(this::packgeLend);
         return lendIPage;
+    }
+
+    @Override
+    public Map<String, Object> getLendDetail(Long id) {
+
+        //查询lend
+        Lend lend = baseMapper.selectById(id);
+        packgeLend(lend);
+
+        //查询借款人对象 Borrower（BorrowerDetailVo）
+        QueryWrapper<Borrower> borrowerQueryWrapper = new QueryWrapper<>();
+        borrowerQueryWrapper.eq("user_id", lend.getUserId());
+        Borrower borrower = borrowerService.getOne(borrowerQueryWrapper);
+        BorrowerDetailVo borrowerDetailVo = borrowerService.getBorrowerDetailVoById(borrower.getId());
+
+        //组装集合结果
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("lend", lend);
+        result.put("borrower", borrowerDetailVo);
+        return result;
     }
 
     private void packgeLend(Lend lend) {
