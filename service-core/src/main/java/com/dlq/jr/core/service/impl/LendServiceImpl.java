@@ -1,13 +1,16 @@
 package com.dlq.jr.core.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.dlq.jr.core.enums.LendStatusEnum;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.dlq.jr.core.pojo.entity.Lend;
 import com.dlq.jr.core.mapper.LendMapper;
 import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
+import com.dlq.jr.core.service.DictService;
 import com.dlq.jr.core.service.LendService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dlq.jr.core.util.LendNoUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,6 +28,9 @@ import java.time.format.DateTimeFormatter;
  */
 @Service
 public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements LendService {
+
+    @Autowired
+    private DictService dictService;
 
     @Override
     public void createlend(BorrowInfoApprovalVo borrowInfoApprovalVo, BorrowInfo borrowInfo) {
@@ -68,4 +74,18 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
         //存入数据库
         baseMapper.insert(lend);
     }
+
+    @Override
+    public IPage<Lend> selectList(IPage<Lend> pageParam) {
+        IPage<Lend> lendIPage = baseMapper.selectPage(pageParam, null);
+        lendIPage.getRecords().forEach(this::packgeLend);
+        return lendIPage;
+    }
+
+    private void packgeLend(Lend lend) {
+        String returnMethod = dictService.getNameByParentDictCodeAndValue("returnMethod", lend.getReturnMethod());
+        lend.getParam().put("returnMethod", returnMethod);
+        lend.getParam().put("status", LendStatusEnum.getMsgByStatus(lend.getStatus()));
+    }
+
 }
