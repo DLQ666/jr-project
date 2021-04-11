@@ -1,7 +1,9 @@
 package com.dlq.jr.core.service;
 
+import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.dlq.jr.core.pojo.entity.Lend;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
 
 /**
  * <p>
@@ -13,4 +15,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface LendService extends IService<Lend> {
 
+    void createlend(BorrowInfoApprovalVo borrowInfoApprovalVo, BorrowInfo borrowInfo);
 }
