@@ -71,7 +71,7 @@ public class UserBindServiceImpl extends ServiceImpl<UserBindMapper, UserBind> i
         map.put("agentId", HfbConst.AGENT_ID);
         map.put("agentUserId", userId);
         map.put("idCard", userBindVo.getIdCard());
-        map.put("personalName", userBindVo.getIdCard());
+        map.put("personalName", userBindVo.getName());
         map.put("bankType", userBindVo.getBankType());
         map.put("bankNo", userBindVo.getBankNo());
         map.put("mobile", userBindVo.getMobile());
