@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *@program: jr-project
@@ -36,5 +37,12 @@ public class AdminBorrowInfoController {
         Page<BorrowInfo> pageParam = new Page<>(page, limit);
         Page<BorrowInfo> pageModel = borrowInfoService.selectList(pageParam, borrowInfoQuery);
         return R.ok().data("pageModel", pageModel);
+    }
+
+    @ApiOperation("借款信息详情")
+    @GetMapping("/show/{id}")
+    public R show(@PathVariable("id") Long id) {
+        Map<String, Object> borrowInfoDetail = borrowInfoService.getBorrowInfoDetail(id);
+        return R.ok().data("borrowInfoDetail", borrowInfoDetail);
     }
 }

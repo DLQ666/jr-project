@@ -13,17 +13,17 @@ import com.dlq.jr.core.pojo.entity.Borrower;
 import com.dlq.jr.core.pojo.entity.IntegralGrade;
 import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
-import com.dlq.jr.core.service.BorrowInfoService;
+import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
+import com.dlq.jr.core.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.dlq.jr.core.service.DictService;
-import com.dlq.jr.core.service.IntegralGradeService;
-import com.dlq.jr.core.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -43,6 +43,8 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
     private IntegralGradeService integralGradeService;
     @Autowired
     private DictService dictService;
+    @Autowired
+    private BorrowerService borrowerService;
 
     @Override
     public BigDecimal getBorrowAmount(Long userId) {
@@ -96,7 +98,7 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
         QueryWrapper<BorrowInfo> borrowInfoQueryWrapper = new QueryWrapper<>();
         borrowInfoQueryWrapper.select("status").eq("user_id", userId);
         List<Object> objects = baseMapper.selectObjs(borrowInfoQueryWrapper);
-        if (objects.size() == 0){
+        if (objects.size() == 0) {
             return BorrowInfoStatusEnum.NO_AUTH.getStatus();
         }
         return (Integer) objects.get(0);
@@ -111,6 +113,26 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
         Page<BorrowInfo> borrowInfoList = baseMapper.selectBorrowInfoList(pageParam, borrowInfoQuery);
         borrowInfoList.getRecords().forEach(this::packgeBorrowInfo);
         return borrowInfoList;
+    }
+
+    @Override
+    public Map<String, Object> getBorrowInfoDetail(Long id) {
+        //查询借款对象  BorrowInfo
+        BorrowInfo borrowInfo = baseMapper.selectById(id);
+        if (borrowInfo == null) {
+            return null;
+        }
+        packgeBorrowInfo(borrowInfo);
+        //查询借款人对象 Borrower（BorrowerDetailVo）
+        QueryWrapper<Borrower> borrowerQueryWrapper = new QueryWrapper<>();
+        borrowerQueryWrapper.eq("user_id", borrowInfo.getUserId());
+        Borrower borrower = borrowerService.getOne(borrowerQueryWrapper);
+        BorrowerDetailVo borrowerDetailVo = borrowerService.getBorrowerDetailVoById(borrower.getId());
+        //组装集合结果
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("borrowInfo", borrowInfo);
+        result.put("borrower", borrowerDetailVo);
+        return result;
     }
 
     private BorrowInfo packgeBorrowInfo(BorrowInfo borrowInfo) {

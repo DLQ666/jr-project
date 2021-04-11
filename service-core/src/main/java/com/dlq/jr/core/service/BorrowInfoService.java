@@ -8,6 +8,7 @@ import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -27,4 +28,5 @@ public interface BorrowInfoService extends IService<BorrowInfo> {
 
     Page<BorrowInfo> selectList(Page<BorrowInfo> pageParam, BorrowInfoQuery borrowInfoQuery);
 
+    Map<String, Object> getBorrowInfoDetail(Long id);
 }
