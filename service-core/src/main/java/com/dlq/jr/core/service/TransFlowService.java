@@ -1,5 +1,6 @@
 package com.dlq.jr.core.service;
 
+import com.dlq.jr.core.pojo.bo.TransFlowBo;
 import com.dlq.jr.core.pojo.entity.TransFlow;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface TransFlowService extends IService<TransFlow> {
 
+    void saveTransFlow(TransFlowBo TransFlowBo);
 }
