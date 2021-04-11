@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -108,6 +109,13 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
         result.put("lend", lend);
         result.put("borrower", borrowerDetailVo);
         return result;
+    }
+
+    @Override
+    public List<Lend> selectList() {
+        List<Lend> lendList = baseMapper.selectList(null);
+        lendList.forEach(this::packgeLend);
+        return lendList;
     }
 
     private void packgeLend(Lend lend) {

@@ -6,6 +6,7 @@ import com.dlq.jr.core.pojo.entity.Lend;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -23,4 +24,6 @@ public interface LendService extends IService<Lend> {
     IPage<Lend> selectList(IPage<Lend> pageParam);
 
     Map<String, Object> getLendDetail(Long id);
+
+    List<Lend> selectList();
 }
