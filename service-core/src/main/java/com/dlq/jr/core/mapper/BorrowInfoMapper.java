@@ -1,7 +1,12 @@
 package com.dlq.jr.core.mapper;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +18,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface BorrowInfoMapper extends BaseMapper<BorrowInfo> {
 
+    Page<BorrowInfo> selectBorrowInfoList(Page page, @Param("borrowInfoQuery") BorrowInfoQuery borrowInfoQuery);
 }

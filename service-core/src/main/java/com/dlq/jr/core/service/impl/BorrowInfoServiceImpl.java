@@ -1,22 +1,30 @@
 package com.dlq.jr.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.common.exception.Assert;
+import com.dlq.jr.common.exception.BusinessException;
 import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.core.enums.*;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.dlq.jr.core.mapper.BorrowInfoMapper;
+import com.dlq.jr.core.pojo.entity.Borrower;
 import com.dlq.jr.core.pojo.entity.IntegralGrade;
 import com.dlq.jr.core.pojo.entity.UserInfo;
+import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
 import com.dlq.jr.core.service.BorrowInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dlq.jr.core.service.DictService;
 import com.dlq.jr.core.service.IntegralGradeService;
 import com.dlq.jr.core.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -33,6 +41,8 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
     private UserInfoService userInfoService;
     @Autowired
     private IntegralGradeService integralGradeService;
+    @Autowired
+    private DictService dictService;
 
     @Override
     public BigDecimal getBorrowAmount(Long userId) {
@@ -90,5 +100,29 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
             return BorrowInfoStatusEnum.NO_AUTH.getStatus();
         }
         return (Integer) objects.get(0);
+    }
+
+    @Override
+    public Page<BorrowInfo> selectList(Page<BorrowInfo> pageParam, BorrowInfoQuery borrowInfoQuery) {
+        if (borrowInfoQuery.getBorrowYearRate() != null) {
+            BigDecimal borrowYearRate = borrowInfoQuery.getBorrowYearRate().divide(new BigDecimal(100));
+            borrowInfoQuery.setBorrowYearRate(borrowYearRate);
+        }
+        Page<BorrowInfo> borrowInfoList = baseMapper.selectBorrowInfoList(pageParam, borrowInfoQuery);
+        borrowInfoList.getRecords().forEach(this::packgeBorrowInfo);
+        return borrowInfoList;
+    }
+
+    private BorrowInfo packgeBorrowInfo(BorrowInfo borrowInfo) {
+        String returnMethod = dictService.getNameByParentDictCodeAndValue(
+                "returnMethod", borrowInfo.getReturnMethod());
+        String moneyUse = dictService.getNameByParentDictCodeAndValue(
+                "moneyUse", borrowInfo.getMoneyUse());
+        String status = BorrowInfoStatusEnum.getMsgByStatus(borrowInfo.getStatus());
+
+        borrowInfo.getParam().put("returnMethod", returnMethod);
+        borrowInfo.getParam().put("moneyUse", moneyUse);
+        borrowInfo.getParam().put("status", status);
+        return borrowInfo;
     }
 }

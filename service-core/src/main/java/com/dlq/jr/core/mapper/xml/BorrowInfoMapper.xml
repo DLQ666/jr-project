@@ -2,4 +2,42 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dlq.jr.core.mapper.BorrowInfoMapper">
 
+    <sql id="borrow">
+        bi.id, bi.user_id, b.name, b.`mobile`, bi.amount, bi.period, bi.borrow_year_rate, bi.return_method,
+        bi.money_use, bi.status, bi.create_time, bi.update_time, bi.is_deleted
+    </sql>
+
+    <select id="selectBorrowInfoList" parameterType="com.dlq.jr.core.pojo.query.BorrowInfoQuery"
+            resultType="com.dlq.jr.core.pojo.entity.BorrowInfo">
+        SELECT <include refid="borrow"></include>
+        FROM `borrow_info` AS bi
+        LEFT JOIN `borrower` AS b
+        ON bi.`user_id` = b.`user_id`
+        WHERE bi.is_deleted = 0 AND b.`is_deleted`= 0
+        <if test="borrowInfoQuery.name != null and borrowInfoQuery.name !='' ">
+            AND b.name LIKE CONCAT('%',#{borrowInfoQuery.name},'%')
+        </if>
+        <if test="borrowInfoQuery.mobile != null and borrowInfoQuery.mobile !='' ">
+            AND b.mobile LIKE CONCAT('%',#{borrowInfoQuery.mobile},'%')
+        </if>
+        <if test="borrowInfoQuery.period != null and borrowInfoQuery.period !=0 ">
+            AND bi.period = #{borrowInfoQuery.period}
+        </if>
+        <if test="borrowInfoQuery.minAmount != null and borrowInfoQuery.minAmount !='' ">
+            AND bi.amount &gt;= #{borrowInfoQuery.minAmount}
+        </if>
+        <if test="borrowInfoQuery.maxAmount != null and borrowInfoQuery.maxAmount !='' ">
+            AND bi.amount &lt;= #{borrowInfoQuery.maxAmount}
+        </if>
+        <if test="borrowInfoQuery.returnMethod != null and borrowInfoQuery.returnMethod !=0 ">
+            AND bi.return_method = #{borrowInfoQuery.returnMethod}
+        </if>
+        <if test="borrowInfoQuery.borrowYearRate != null and borrowInfoQuery.borrowYearRate !=0 ">
+            AND bi.borrow_year_rate = #{borrowInfoQuery.borrowYearRate}
+        </if>
+        <if test="borrowInfoQuery.status != null and borrowInfoQuery.status !=''">
+            AND bi.status = #{borrowInfoQuery.status}
+        </if>
+        ORDER BY bi.update_time DESC
+    </select>
 </mapper>

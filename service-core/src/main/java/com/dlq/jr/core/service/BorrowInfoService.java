@@ -1,9 +1,13 @@
 package com.dlq.jr.core.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * <p>
@@ -20,4 +24,7 @@ public interface BorrowInfoService extends IService<BorrowInfo> {
     void saveBorrowInfo(BorrowInfo borrowInfo, Long userId);
 
     Integer getStatusByUserId(Long userId);
+
+    Page<BorrowInfo> selectList(Page<BorrowInfo> pageParam, BorrowInfoQuery borrowInfoQuery);
+
 }
