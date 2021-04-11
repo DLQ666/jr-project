@@ -7,17 +7,16 @@ import com.dlq.jr.common.exception.Assert;
 import com.dlq.jr.common.exception.BusinessException;
 import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.core.enums.*;
-import com.dlq.jr.core.pojo.entity.BorrowInfo;
+import com.dlq.jr.core.pojo.entity.*;
 import com.dlq.jr.core.mapper.BorrowInfoMapper;
-import com.dlq.jr.core.pojo.entity.Borrower;
-import com.dlq.jr.core.pojo.entity.IntegralGrade;
-import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
+import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
 import com.dlq.jr.core.pojo.vo.BorrowerDetailVo;
 import com.dlq.jr.core.service.*;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
@@ -45,6 +44,8 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
     private DictService dictService;
     @Autowired
     private BorrowerService borrowerService;
+    @Autowired
+    private LendService lendService;
 
     @Override
     public BigDecimal getBorrowAmount(Long userId) {
@@ -133,6 +134,22 @@ public class BorrowInfoServiceImpl extends ServiceImpl<BorrowInfoMapper, BorrowI
         result.put("borrowInfo", borrowInfo);
         result.put("borrower", borrowerDetailVo);
         return result;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void approval(BorrowInfoApprovalVo borrowInfoApprovalVo) {
+        //修改借款审批状态 borrow_info
+        BorrowInfo borrowInfo = baseMapper.selectById(borrowInfoApprovalVo.getId());
+        borrowInfo.setStatus(borrowInfoApprovalVo.getStatus());
+        baseMapper.updateById(borrowInfo);
+
+        //如果审核通过，则产生新的标的记录 lend
+        if (borrowInfoApprovalVo.getStatus().intValue() == BorrowInfoStatusEnum.CHECK_OK.getStatus().intValue()){
+            //产生新标的
+            lendService.createlend(borrowInfoApprovalVo,borrowInfo);
+        }
+
     }
 
     private BorrowInfo packgeBorrowInfo(BorrowInfo borrowInfo) {

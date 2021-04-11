@@ -6,6 +6,7 @@ import com.dlq.jr.common.result.R;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.dlq.jr.core.pojo.entity.Borrower;
 import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
+import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
 import com.dlq.jr.core.service.BorrowInfoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -44,5 +45,12 @@ public class AdminBorrowInfoController {
     public R show(@PathVariable("id") Long id) {
         Map<String, Object> borrowInfoDetail = borrowInfoService.getBorrowInfoDetail(id);
         return R.ok().data("borrowInfoDetail", borrowInfoDetail);
+    }
+
+    @ApiOperation("审批借款信息")
+    @PostMapping("/approval")
+    public R approval(@RequestBody BorrowInfoApprovalVo borrowInfoApprovalVo) {
+        borrowInfoService.approval(borrowInfoApprovalVo);
+        return R.ok().message("审批完成");
     }
 }

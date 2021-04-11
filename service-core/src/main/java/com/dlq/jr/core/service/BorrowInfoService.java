@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dlq.jr.core.pojo.query.BorrowInfoQuery;
+import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,4 +30,6 @@ public interface BorrowInfoService extends IService<BorrowInfo> {
     Page<BorrowInfo> selectList(Page<BorrowInfo> pageParam, BorrowInfoQuery borrowInfoQuery);
 
     Map<String, Object> getBorrowInfoDetail(Long id);
+
+    void approval(BorrowInfoApprovalVo borrowInfoApprovalVo);
 }
