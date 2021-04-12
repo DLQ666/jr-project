@@ -83,11 +83,11 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
                 TransTypeEnum.RECHARGE,
                 "充值");
         transFlowService.saveTransFlow(transFlowBo);
-        try {
-            TimeUnit.SECONDS.sleep(110);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            TimeUnit.SECONDS.sleep(110);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         return "success";
     }
 }
