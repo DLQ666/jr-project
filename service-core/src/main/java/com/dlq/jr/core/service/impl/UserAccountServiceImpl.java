@@ -1,5 +1,6 @@
 package com.dlq.jr.core.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dlq.jr.core.enums.TransTypeEnum;
 import com.dlq.jr.core.hfb.FormHelper;
 import com.dlq.jr.core.hfb.HfbConst;
@@ -89,5 +90,13 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
 //            e.printStackTrace();
 //        }
         return "success";
+    }
+
+    @Override
+    public BigDecimal getAccount(Long userId) {
+        QueryWrapper<UserAccount> userAccountQueryWrapper = new QueryWrapper<>();
+        userAccountQueryWrapper.eq("user_id", userId);
+        UserAccount userAccount = baseMapper.selectOne(userAccountQueryWrapper);
+        return userAccount.getAmount();
     }
 }
