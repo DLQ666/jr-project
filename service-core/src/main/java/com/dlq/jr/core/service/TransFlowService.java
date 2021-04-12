@@ -15,4 +15,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface TransFlowService extends IService<TransFlow> {
 
     void saveTransFlow(TransFlowBo TransFlowBo);
+
+    boolean isSaveTransFlow(String agentBillNo);
 }
