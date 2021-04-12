@@ -48,5 +48,26 @@ public class UserAccountController {
         return R.ok().data("formStr", formStr);
     }
 
+    @ApiOperation(value = "用户充值异步回调")
+    @PostMapping("/notify")
+    public String notify(HttpServletRequest request) {
+        Map<String, Object> paramMap = RequestHelper.switchMap(request.getParameterMap());
+        log.info("用户充值异步回调：" + JSON.toJSONString(paramMap));
+
+        //验签
+        if (RequestHelper.isSignEquals(paramMap)){
+            //判断业务是否成功
+            if ("0001".equals(paramMap.get("resultCode"))){
+                //同步账户数据
+                return userAccountService.notify(paramMap);
+            }else {
+                log.info("用户充值异步回调充值失败，代码不是0001：" + JSON.toJSONString(paramMap));
+                return "success";
+            }
+        }else {
+            log.info("用户充值异步回调签名错误：" + JSON.toJSONString(paramMap));
+            return "fail";
+        }
+    }
 }
 
