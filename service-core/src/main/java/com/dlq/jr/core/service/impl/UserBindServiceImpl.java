@@ -7,10 +7,12 @@ import com.dlq.jr.core.enums.UserBindEnum;
 import com.dlq.jr.core.hfb.FormHelper;
 import com.dlq.jr.core.hfb.HfbConst;
 import com.dlq.jr.core.hfb.RequestHelper;
+import com.dlq.jr.core.pojo.entity.UserAccount;
 import com.dlq.jr.core.pojo.entity.UserBind;
 import com.dlq.jr.core.mapper.UserBindMapper;
 import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.pojo.vo.UserBindVo;
+import com.dlq.jr.core.service.UserAccountService;
 import com.dlq.jr.core.service.UserBindService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dlq.jr.core.service.UserInfoService;
@@ -35,6 +37,8 @@ public class UserBindServiceImpl extends ServiceImpl<UserBindMapper, UserBind> i
 
     @Autowired
     private UserInfoService userInfoService;
+    @Autowired
+    private UserAccountService userAccountService;
 
     /**
      * 账户绑定提交数据
@@ -60,6 +64,11 @@ public class UserBindServiceImpl extends ServiceImpl<UserBindMapper, UserBind> i
             userBind.setUserId(userId);
             userBind.setStatus(UserBindEnum.NO_BIND.getStatus());
             baseMapper.insert(userBind);
+
+            //创建用户账户记录
+            UserAccount userAccount = new UserAccount();
+            userAccount.setUserId(userId);
+            userAccountService.save(userAccount);
         } else {
             //相同的user_id，如果存在，n那么就取出数据，进行更新
             BeanUtils.copyProperties(userBindVo, userBind);
