@@ -3,6 +3,7 @@ package com.dlq.jr.core.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.dlq.jr.core.enums.LendStatusEnum;
+import com.dlq.jr.core.enums.ReturnMethodEnum;
 import com.dlq.jr.core.pojo.entity.BorrowInfo;
 import com.dlq.jr.core.pojo.entity.Borrower;
 import com.dlq.jr.core.pojo.entity.Lend;
@@ -13,7 +14,7 @@ import com.dlq.jr.core.service.BorrowerService;
 import com.dlq.jr.core.service.DictService;
 import com.dlq.jr.core.service.LendService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.dlq.jr.core.util.LendNoUtils;
+import com.dlq.jr.core.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -116,6 +117,21 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
         List<Lend> lendList = baseMapper.selectList(null);
         lendList.forEach(this::packgeLend);
         return lendList;
+    }
+
+    @Override
+    public BigDecimal getInterestCount(BigDecimal invest, BigDecimal yearRate, Integer totalmonth, Integer returnMethod) {
+        BigDecimal interestCount;
+        if (returnMethod.intValue() == ReturnMethodEnum.ONE.getMethod().intValue()) {
+            interestCount = Amount1Helper.getInterestCount(invest, yearRate, totalmonth);
+        } else if (returnMethod.intValue() == ReturnMethodEnum.TWO.getMethod().intValue()) {
+            interestCount = Amount2Helper.getInterestCount(invest, yearRate, totalmonth);
+        } else if (returnMethod.intValue() == ReturnMethodEnum.THREE.getMethod().intValue()) {
+            interestCount = Amount3Helper.getInterestCount(invest, yearRate, totalmonth);
+        } else {
+            interestCount = Amount4Helper.getInterestCount(invest, yearRate, totalmonth);
+        }
+        return interestCount;
     }
 
     private void packgeLend(Lend lend) {

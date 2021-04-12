@@ -6,6 +6,7 @@ import com.dlq.jr.core.pojo.entity.Lend;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.dlq.jr.core.pojo.vo.BorrowInfoApprovalVo;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -26,4 +27,6 @@ public interface LendService extends IService<Lend> {
     Map<String, Object> getLendDetail(Long id);
 
     List<Lend> selectList();
+
+    BigDecimal getInterestCount(BigDecimal invest, BigDecimal yearRate, Integer totalmonth, Integer returnMethod);
 }
