@@ -2,6 +2,7 @@ package com.dlq.jr.core.service;
 
 import com.dlq.jr.core.pojo.entity.LendItem;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.dlq.jr.core.pojo.vo.InvestVo;
 
 /**
  * <p>
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface LendItemService extends IService<LendItem> {
 
+    String commitInvest(InvestVo investVo);
 }
