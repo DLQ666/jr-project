@@ -1,17 +1,18 @@
 package com.dlq.jr.core.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.dlq.jr.common.exception.Assert;
 import com.dlq.jr.common.result.ResponseEnum;
-import com.dlq.jr.core.enums.LendItemStatusEnum;
-import com.dlq.jr.core.enums.LendStatusEnum;
-import com.dlq.jr.core.enums.UserStatusEnum;
-import com.dlq.jr.core.enums.UserTypeEnum;
+import com.dlq.jr.core.enums.*;
 import com.dlq.jr.core.hfb.FormHelper;
 import com.dlq.jr.core.hfb.HfbConst;
 import com.dlq.jr.core.hfb.RequestHelper;
+import com.dlq.jr.core.mapper.UserAccountMapper;
+import com.dlq.jr.core.pojo.bo.TransFlowBo;
 import com.dlq.jr.core.pojo.entity.Lend;
 import com.dlq.jr.core.pojo.entity.LendItem;
 import com.dlq.jr.core.mapper.LendItemMapper;
+import com.dlq.jr.core.pojo.entity.UserAccount;
 import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.pojo.vo.InvestVo;
 import com.dlq.jr.core.service.*;
@@ -19,6 +20,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dlq.jr.core.util.LendNoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -44,6 +46,10 @@ public class LendItemServiceImpl extends ServiceImpl<LendItemMapper, LendItem> i
     private UserInfoService userInfoService;
     @Autowired
     private UserBindService userBindService;
+    @Autowired
+    private TransFlowService transFlowService;
+    @Autowired
+    private UserAccountMapper userAccountMapper;
 
     @Override
     public String commitInvest(InvestVo investVo) {
@@ -127,7 +133,7 @@ public class LendItemServiceImpl extends ServiceImpl<LendItemMapper, LendItem> i
         paramMap.put("agentProjectName", lend.getTitle());
 
         //在资金托管平台上的投资订单的唯一编号，要和lendItemNo保持一致。
-        paramMap.put("agentBillNo", lendItemNo);//订单编号
+        paramMap.put("agentBillNo", lendItemNo); //订单编号
         paramMap.put("voteAmt", investVo.getInvestAmount());
         paramMap.put("votePrizeAmt", "0");
         paramMap.put("voteFeeAmt", "0");
@@ -141,5 +147,65 @@ public class LendItemServiceImpl extends ServiceImpl<LendItemMapper, LendItem> i
 
         //构建充值自动提交表单
         return FormHelper.buildForm(HfbConst.INVEST_URL, paramMap);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public String notify(Map<String, Object> paramMap) {
+
+        //0、接口幂等性判断
+        String agentBillNo = (String) paramMap.get("agentBillNo");
+        boolean result = transFlowService.isSaveTransFlow(agentBillNo);
+        if (result) {
+            log.warn("幂等性返回");
+            return "success";
+        }
+
+        //获取用户的绑定协议号
+        String voteBindCode = (String) paramMap.get("voteBindCode");
+        //获取投资人投资金额
+        String voteAmt = (String) paramMap.get("voteAmt");
+        //1、修改账户金额：从余额中减去投资金额，从冻结金额中增加投资金额
+        userAccountMapper.updateAccount(voteBindCode,
+                new BigDecimal("-" + voteAmt),
+                new BigDecimal(voteAmt));
+
+        //2、修改投标记录的状态
+        LendItem lendItem = this.getmByLendItemNo(agentBillNo);
+        lendItem.setStatus(LendItemStatusEnum.PAYMENT.getStatus());
+        lendItem.setUpdateTime(LocalDateTime.now());
+        baseMapper.updateById(lendItem);
+
+        //3、修改标的表中 投资人数  和已投金额
+        Long lendId = lendItem.getLendId();
+        Lend lend = lendService.getById(lendId);
+        lend.setInvestNum(lend.getInvestNum() + 1);
+        lend.setInvestAmount(lend.getInvestAmount().add(lendItem.getInvestAmount()));
+        lend.setUpdateTime(LocalDateTime.now());
+        lendService.updateById(lend);
+
+        //4、新增交易流水
+        //记录账户流水
+        TransFlowBo transFlowBo = new TransFlowBo(
+                agentBillNo,
+                voteBindCode,
+                new BigDecimal(voteAmt),
+                TransTypeEnum.INVEST_LOCK,
+                "项目编号：" + lend.getLendNo() + "，项目名称："
+                        + lend.getTitle() + "，冻结：" + voteAmt + " 元");
+        transFlowService.saveTransFlow(transFlowBo);
+
+        return "success";
+    }
+
+    /**
+     * 根据流水号获取投资记录
+     * @param lendItemNo 流水号
+     * @return 投资记录
+     */
+    private LendItem getmByLendItemNo(String lendItemNo){
+        QueryWrapper<LendItem> lendItemQueryWrapper = new QueryWrapper<>();
+        lendItemQueryWrapper.eq("lend_item_no", lendItemNo);
+        return baseMapper.selectOne(lendItemQueryWrapper);
     }
 }
