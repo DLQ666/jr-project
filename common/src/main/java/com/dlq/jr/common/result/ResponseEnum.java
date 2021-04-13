@@ -50,6 +50,8 @@ public enum ResponseEnum {
     WEIXIN_CALLBACK_PARAM_ERROR(-601, "回调参数不正确"),
     WEIXIN_FETCH_ACCESSTOKEN_ERROR(-602, "获取access_token失败"),
     WEIXIN_FETCH_USERINFO_ERROR(-603, "获取用户信息失败"),
+
+    USER_TYPE_ERROR(-701, "借款人无法投资"),
     ;
 
     //响应状态码
