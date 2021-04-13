@@ -15,7 +15,7 @@ public enum LendItemStatusEnum {
     //0：默认 1：已支付 2：已还款
     DEFAULT(0, "默认"),
     PAYMENT(1, "已支付"),
-    REPAYMENT(1, "已还款"),
+    REPAYMENT(2, "已还款"),
     ;
 
     private Integer status;
