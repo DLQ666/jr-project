@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -196,6 +197,13 @@ public class LendItemServiceImpl extends ServiceImpl<LendItemMapper, LendItem> i
         transFlowService.saveTransFlow(transFlowBo);
 
         return "success";
+    }
+
+    @Override
+    public List<LendItem> selectByLendId(Long lendId, Integer status) {
+        QueryWrapper<LendItem> lendItemQueryWrapper = new QueryWrapper<>();
+        lendItemQueryWrapper.eq("lend_id", lendId).eq("status", status);
+        return baseMapper.selectList(lendItemQueryWrapper);
     }
 
     /**

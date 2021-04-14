@@ -29,4 +29,6 @@ public interface LendService extends IService<Lend> {
     List<Lend> selectList();
 
     BigDecimal getInterestCount(BigDecimal invest, BigDecimal yearRate, Integer totalmonth, Integer returnMethod);
+
+    void makeLoan(Long id);
 }

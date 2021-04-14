@@ -8,6 +8,7 @@ import com.dlq.jr.core.pojo.entity.Lend;
 import com.dlq.jr.core.service.LendService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +43,13 @@ public class AdminLendController {
     public R show(@PathVariable Long id) {
         Map<String, Object> result = lendService.getLendDetail(id);
         return R.ok().data("lendDetail", result);
+    }
+
+    @ApiOperation("放款")
+    @GetMapping("/makeLoan/{id}")
+    public R makeLoan(@ApiParam(value = "标的id", required = true) @PathVariable("id") Long id) {
+        lendService.makeLoan(id);
+        return R.ok().message("放款成功");
     }
 }
 
