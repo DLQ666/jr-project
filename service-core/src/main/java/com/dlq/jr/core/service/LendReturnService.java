@@ -16,4 +16,6 @@ import java.util.List;
 public interface LendReturnService extends IService<LendReturn> {
 
     List<LendReturn> selectByLendId(Long lendId);
+
+    String commitReturn(Long lendReturnId, Long userId);
 }
