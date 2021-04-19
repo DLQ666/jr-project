@@ -253,7 +253,7 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
 
         //按还款时间生成还款计划
         int len = lend.getPeriod().intValue();
-        for (int i = 0; i < len; i++) {
+        for (int i = 1; i <= len; i++) {
             //创建还款计划对象
             LendReturn lendReturn = new LendReturn();
             //填充基本属性
@@ -370,7 +370,7 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
         //创建回款计划列表
         List<LendItemReturn> lendItemReturnList = new ArrayList<>();
         for (Map.Entry<Integer, BigDecimal> entry : mapInterest.entrySet()) {
-            Integer currentPeriod = entry.getKey();//当前期数
+            Integer currentPeriod = entry.getKey(); //当前期数
             //根据当前期数，获取还款计划的id
             Long lendReturnId = lendReturnMap.get(currentPeriod);
 
@@ -387,12 +387,12 @@ public class LendServiceImpl extends ServiceImpl<LendMapper, Lend> implements Le
             lendItemReturn.setCurrentPeriod(currentPeriod);
             lendItemReturn.setReturnMethod(lend.getReturnMethod());
             // 设置回款本金、利息和总额（注意左后一个月的计算）
-            if (currentPeriod.intValue() == lend.getPeriod()){ //最后一期
+            if (currentPeriod.intValue() == lend.getPeriod().intValue()){ //最后一期
                 //除掉最后一期 的 所有金额总和  本金
                 BigDecimal sumPrincipal = lendItemReturnList.stream()
                         .map(LendItemReturn::getPrincipal)
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
-                //最后一期的回款金额
+                //最后一期的回款金额  是  投资总的投资金额  减去  前几期的回款金额
                 BigDecimal lastPrincipal = lendItem.getInvestAmount().subtract(sumPrincipal);
                 lendItemReturn.setPrincipal(lastPrincipal);
 
