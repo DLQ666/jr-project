@@ -40,6 +40,7 @@ public enum ResponseEnum {
     LEND_INVEST_ERROR(305, "当前状态无法投标"),
     LEND_FULL_SCALE_ERROR(306, "已满标，无法投标"),
     NOT_SUFFICIENT_FUNDS_ERROR(307, "余额不足，请充值"),
+    NOT_SUFFICIENT_ERROR(307, "余额不足"),
 
     PAY_UNIFIEDORDER_ERROR(401, "统一下单错误"),
 

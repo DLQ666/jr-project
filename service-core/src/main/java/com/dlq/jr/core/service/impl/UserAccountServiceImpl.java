@@ -1,6 +1,8 @@
 package com.dlq.jr.core.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.dlq.jr.common.exception.Assert;
+import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.core.enums.TransTypeEnum;
 import com.dlq.jr.core.hfb.FormHelper;
 import com.dlq.jr.core.hfb.HfbConst;
@@ -12,6 +14,7 @@ import com.dlq.jr.core.pojo.entity.UserInfo;
 import com.dlq.jr.core.service.TransFlowService;
 import com.dlq.jr.core.service.UserAccountService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.dlq.jr.core.service.UserBindService;
 import com.dlq.jr.core.service.UserInfoService;
 import com.dlq.jr.core.util.LendNoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +41,10 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
     private UserInfoService userInfoService;
     @Autowired
     private TransFlowService transFlowService;
+    @Autowired
+    private UserBindService userBindService;
+    @Autowired
+    private UserAccountService userAccountService;
 
     @Override
     public String commitCharge(BigDecimal chargeAmt, Long userId) {
@@ -98,5 +105,31 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         userAccountQueryWrapper.eq("user_id", userId);
         UserAccount userAccount = baseMapper.selectOne(userAccountQueryWrapper);
         return userAccount.getAmount();
+    }
+
+    @Override
+    public String commitWithdraw(BigDecimal fetchAmt, Long userId) {
+
+        //健壮性校验----判断当前用户提现金额不能大于 用户的余额
+        BigDecimal account = userAccountService.getAccount(userId);
+        Assert.isTrue(account.doubleValue() >= fetchAmt.doubleValue(), ResponseEnum.NOT_SUFFICIENT_ERROR);
+
+        String bindCode = userBindService.getBindCodeByUserId(userId);
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("agentId", HfbConst.AGENT_ID);
+        paramMap.put("agentBillNo", LendNoUtils.getWithdrawNo());
+        paramMap.put("bindCode", bindCode);
+        paramMap.put("fetchAmt", fetchAmt);
+        paramMap.put("feeAmt", new BigDecimal(0));
+        paramMap.put("notifyUrl", HfbConst.WITHDRAW_NOTIFY_URL);
+        paramMap.put("returnUrl", HfbConst.WITHDRAW_RETURN_URL);
+        paramMap.put("timestamp", RequestHelper.getTimestamp());
+        String sign = RequestHelper.getSign(paramMap);
+        paramMap.put("sign", sign);
+
+        //构建自动提交表单
+        String formStr = FormHelper.buildForm(HfbConst.WITHDRAW_URL, paramMap);
+        return formStr;
     }
 }

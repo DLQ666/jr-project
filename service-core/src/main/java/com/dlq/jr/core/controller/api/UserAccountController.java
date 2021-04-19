@@ -8,6 +8,7 @@ import com.dlq.jr.core.service.UserAccountService;
 import com.dlq.jr.util.JwtUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -74,6 +75,17 @@ public class UserAccountController {
         Long userId = JwtUtils.getUserId(token);
         BigDecimal account = userAccountService.getAccount(userId);
         return R.ok().data("account", account);
+    }
+
+    @ApiOperation("用户提现")
+    @PostMapping("/auth/commitWithdraw/{fetchAmt}")
+    public R commitWithdraw(@ApiParam(value = "金额", required = true)
+                                @PathVariable BigDecimal fetchAmt, HttpServletRequest request) {
+
+        String token = request.getHeader("token");
+        Long userId = JwtUtils.getUserId(token);
+        String formStr = userAccountService.commitWithdraw(fetchAmt, userId);
+        return R.ok().data("formStr", formStr);
     }
 }
 
