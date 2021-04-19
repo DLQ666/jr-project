@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dlq.jr.core.service.UserBindService;
 import com.dlq.jr.core.service.UserInfoService;
 import com.dlq.jr.core.util.LendNoUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @author D奇
  * @since 2021-04-03
  */
+@Slf4j
 @Service
 public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserAccount> implements UserAccountService {
 
@@ -131,5 +133,34 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         //构建自动提交表单
         String formStr = FormHelper.buildForm(HfbConst.WITHDRAW_URL, paramMap);
         return formStr;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void notifyWithdraw(Map<String, Object> paramMap) {
+        //接口幂等性
+        log.info("提现成功");
+        String agentBillNo = (String) paramMap.get("agentBillNo");
+        boolean result = transFlowService.isSaveTransFlow(agentBillNo);
+        if (result) {
+            log.warn("幂等性返回");
+            return;
+        }
+
+        //账户同步
+        String bindCode = (String) paramMap.get("bindCode");
+        String fetchAmt = (String) paramMap.get("fetchAmt");
+        baseMapper.updateAccount(bindCode, new BigDecimal("-" + fetchAmt), new BigDecimal(0));
+        //baseMapper.updateAccount(bindCode, (new BigDecimal(fetchAmt)).negate(), new BigDecimal(0));
+
+        //交易流水
+        //记录账户流水
+        TransFlowBo transFlowBo = new TransFlowBo(
+                agentBillNo,
+                bindCode,
+                new BigDecimal(fetchAmt),
+                TransTypeEnum.WITHDRAW,
+                "提现");
+        transFlowService.saveTransFlow(transFlowBo);
     }
 }
