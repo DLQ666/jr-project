@@ -66,9 +66,9 @@ public class UserBindServiceImpl extends ServiceImpl<UserBindMapper, UserBind> i
             baseMapper.insert(userBind);
 
             //创建用户账户记录
-            UserAccount userAccount = new UserAccount();
-            userAccount.setUserId(userId);
-            userAccountService.save(userAccount);
+//            UserAccount userAccount = new UserAccount();
+//            userAccount.setUserId(userId);
+//            userAccountService.save(userAccount);
         } else {
             //相同的user_id，如果存在，n那么就取出数据，进行更新
             BeanUtils.copyProperties(userBindVo, userBind);
