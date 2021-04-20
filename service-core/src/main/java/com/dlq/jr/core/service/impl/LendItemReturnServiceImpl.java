@@ -75,10 +75,10 @@ public class LendItemReturnServiceImpl extends ServiceImpl<LendItemReturnMapper,
             map.put("agentProjectCode", lend.getLendNo()); //项目编号
             map.put("voteBillNo", lendItem.getLendItemNo());//投资编号
             map.put("toBindCode", bindCode); //收款人（投资人）bindCode
-            map.put("transit_amt", lendItemReturn.getTotal()); //还款金额
-            map.put("base_amt", lendItemReturn.getPrincipal()); //还款本金
-            map.put("benifit_amt", lendItemReturn.getInterest()); // 还款利息
-            map.put("fee_amt", new BigDecimal(0)); //商户手续费
+            map.put("transitAmt", lendItemReturn.getTotal()); //还款金额
+            map.put("baseAmt", lendItemReturn.getPrincipal()); //还款本金
+            map.put("benifitAmt", lendItemReturn.getInterest()); // 还款利息
+            map.put("feeAmt", new BigDecimal(0)); //商户手续费
 
             lendItemReturnDetailList.add(map);
         }
