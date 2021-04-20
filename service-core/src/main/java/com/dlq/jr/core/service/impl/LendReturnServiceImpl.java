@@ -164,6 +164,7 @@ public class LendReturnServiceImpl extends ServiceImpl<LendReturnMapper, LendRet
         lendItemReturnList.forEach(item -> {
             //更新回款状态
             item.setStatus(1);
+            item.setRealReturnTime(LocalDateTime.now());
             lendItemReturnService.updateById(item);
 
             //更新出借信息
@@ -183,7 +184,7 @@ public class LendReturnServiceImpl extends ServiceImpl<LendReturnMapper, LendRet
                     item.getTotal(),
                     TransTypeEnum.INVEST_BACK,
                     "还款到账，项目编号：" + lend.getLendNo() + "，项目名称：" + lend.getTitle()
-                            + "回款金额：" + totalAmt);
+                            + "回款金额：" + lend.getLendNo());
             transFlowService.saveTransFlow(investTransFlowBO);
         });
     }
