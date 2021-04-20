@@ -1,18 +1,22 @@
 package com.dlq.jr.core.controller.api;
 
 
+import com.alibaba.fastjson.JSON;
 import com.dlq.jr.common.result.R;
+import com.dlq.jr.core.hfb.RequestHelper;
 import com.dlq.jr.core.pojo.entity.LendReturn;
 import com.dlq.jr.core.service.LendReturnService;
 import com.dlq.jr.util.JwtUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -23,6 +27,7 @@ import java.util.List;
  * @since 2021-04-03
  */
 @Api(tags = "还款计划")
+@Slf4j
 @RestController
 @RequestMapping("/api/core/lendReturn")
 public class LendReturnController {
@@ -46,6 +51,28 @@ public class LendReturnController {
         Long userId = JwtUtils.getUserId(token);
         String formStr = lendReturnService.commitReturn(lendReturnId, userId);
         return R.ok().data("formStr", formStr);
+    }
+
+    @ApiOperation("还款异步回调")
+    @PostMapping("/notifyUrl")
+    public String notifyUrl(HttpServletRequest request) {
+
+        Map<String, Object> paramMap = RequestHelper.switchMap(request.getParameterMap());
+        log.info("还款异步回调：" + JSON.toJSONString(paramMap));
+
+        //校验签名
+        if(RequestHelper.isSignEquals(paramMap)) {
+            if("0001".equals(paramMap.get("resultCode"))) {
+                lendReturnService.notify(paramMap);
+            } else {
+                log.info("还款异步回调失败：" + JSON.toJSONString(paramMap));
+                return "fail";
+            }
+        } else {
+            log.info("还款异步回调签名错误：" + JSON.toJSONString(paramMap));
+            return "fail";
+        }
+        return "success";
     }
 }
 
