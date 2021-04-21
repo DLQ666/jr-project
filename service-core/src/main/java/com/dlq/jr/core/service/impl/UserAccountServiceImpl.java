@@ -108,7 +108,7 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
         String mobile = userInfoService.getMobileByBindCode(bindCode);
         SmsDTO smsDTO = new SmsDTO();
         smsDTO.setMobile(mobile);
-        smsDTO.setMessage("充值成功");
+        smsDTO.setMessage("chongzhichenggong");
         mqService.sendMessage(MQConst.EXCHANGE_TOPIC_SMS,MQConst.ROUTING_SMS_ITEM,smsDTO);
         return "success";
     }
