@@ -11,6 +11,8 @@ import com.dlq.jr.core.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 /**
  * <p>
  * 交易流水表 服务实现类
@@ -48,5 +50,12 @@ public class TransFlowServiceImpl extends ServiceImpl<TransFlowMapper, TransFlow
         transFlowQueryWrapper.eq("trans_no", agentBillNo);
         Integer count = baseMapper.selectCount(transFlowQueryWrapper);
         return count > 0;
+    }
+
+    @Override
+    public List<TransFlow> selectByUserId(Long userId) {
+        QueryWrapper<TransFlow> transFlowQueryWrapper = new QueryWrapper<>();
+        transFlowQueryWrapper.eq("user_id", userId).orderByDesc("id");
+        return baseMapper.selectList(transFlowQueryWrapper);
     }
 }
