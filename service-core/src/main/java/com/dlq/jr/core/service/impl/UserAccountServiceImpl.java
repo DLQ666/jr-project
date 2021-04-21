@@ -17,6 +17,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.dlq.jr.core.service.UserBindService;
 import com.dlq.jr.core.service.UserInfoService;
 import com.dlq.jr.core.util.LendNoUtils;
+import com.dlq.jr.dto.SmsDTO;
+import com.dlq.jr.rabbitmq.MQConst;
+import com.dlq.jr.service.MQService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,6 +50,8 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
     private UserBindService userBindService;
     @Autowired
     private UserAccountService userAccountService;
+    @Autowired
+    private MQService mqService;
 
     @Override
     public String commitCharge(BigDecimal chargeAmt, Long userId) {
@@ -98,6 +103,13 @@ public class UserAccountServiceImpl extends ServiceImpl<UserAccountMapper, UserA
 //        } catch (InterruptedException e) {
 //            e.printStackTrace();
 //        }
+
+        //向MQ服务器发送消息---充值成功
+        String mobile = userInfoService.getMobileByBindCode(bindCode);
+        SmsDTO smsDTO = new SmsDTO();
+        smsDTO.setMobile(mobile);
+        smsDTO.setMessage("充值成功");
+        mqService.sendMessage(MQConst.EXCHANGE_TOPIC_SMS,MQConst.ROUTING_SMS_ITEM,smsDTO);
         return "success";
     }
 
