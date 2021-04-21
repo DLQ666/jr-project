@@ -12,6 +12,7 @@ import com.dlq.jr.core.pojo.entity.UserLoginRecord;
 import com.dlq.jr.core.pojo.query.UserInfoQuery;
 import com.dlq.jr.core.pojo.vo.LoginVo;
 import com.dlq.jr.core.pojo.vo.RegisterVo;
+import com.dlq.jr.core.pojo.vo.UserIndexVo;
 import com.dlq.jr.core.pojo.vo.UserInfoVo;
 import com.dlq.jr.core.service.UserAccountService;
 import com.dlq.jr.core.service.UserInfoService;
@@ -24,6 +25,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 /**
  * <p>
@@ -40,6 +43,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     private UserAccountService userAccountService;
     @Autowired
     private UserLoginRecordService userLoginRecordService;
+    @Autowired
+    private UserLoginRecordService getUserLoginRecordService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -157,5 +162,38 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         wrapper.eq("mobile", mobile);
         Integer count = baseMapper.selectCount(wrapper);
         return count > 0;
+    }
+
+    @Override
+    public UserIndexVo getIndexUserInfo(Long userId) {
+
+        //获取用户信息
+        UserInfo userInfo = baseMapper.selectById(userId);
+        //获取账户信息
+        QueryWrapper<UserAccount> userAccountQueryWrapper = new QueryWrapper<>();
+        userAccountQueryWrapper.eq("user_id", userId);
+        UserAccount userAccount = userAccountService.getOne(userAccountQueryWrapper);
+
+        //获取用户登录日志
+        QueryWrapper<UserLoginRecord> userLoginRecordQueryWrapper = new QueryWrapper<>();
+        userLoginRecordQueryWrapper
+                .eq("user_id", userId)
+                .orderByDesc("id")
+                .last("limit 1");
+        UserLoginRecord userLoginRecord = userLoginRecordService.getOne(userLoginRecordQueryWrapper);
+
+        //组装结果对象
+        UserIndexVo userIndexVo = new UserIndexVo();
+        userIndexVo.setUserId(userId);
+        userIndexVo.setUserType(userInfo.getUserType());
+        userIndexVo.setName(userInfo.getName());
+        userIndexVo.setNickName(userInfo.getNickName());
+        userIndexVo.setHeadImg(userInfo.getHeadImg());
+        userIndexVo.setBindStatus(userInfo.getBindStatus());
+        userIndexVo.setAmount(userAccount.getAmount());
+        userIndexVo.setFreezeAmount(userAccount.getFreezeAmount());
+        userIndexVo.setLastLoginTime(userLoginRecord.getCreateTime());
+
+        return userIndexVo;
     }
 }

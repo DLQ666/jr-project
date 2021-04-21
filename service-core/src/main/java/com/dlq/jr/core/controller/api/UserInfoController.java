@@ -7,6 +7,7 @@ import com.dlq.jr.common.result.ResponseEnum;
 import com.dlq.jr.common.util.RegexValidateUtils;
 import com.dlq.jr.core.pojo.vo.LoginVo;
 import com.dlq.jr.core.pojo.vo.RegisterVo;
+import com.dlq.jr.core.pojo.vo.UserIndexVo;
 import com.dlq.jr.core.pojo.vo.UserInfoVo;
 import com.dlq.jr.core.service.UserInfoService;
 import com.dlq.jr.util.JwtUtils;
@@ -97,6 +98,15 @@ public class UserInfoController {
     @GetMapping("/checkMobile/{mobile}")
     public boolean checkMobile(@PathVariable("mobile") String mobile){
         return userInfoService.checkMobile(mobile);
+    }
+
+    @ApiOperation("获取个人空间用户信息")
+    @GetMapping("/auth/getIndexUserInfo")
+    public R getIndexUserInfo(HttpServletRequest request) {
+        String token = request.getHeader("token");
+        Long userId = JwtUtils.getUserId(token);
+        UserIndexVo userIndexVo = userInfoService.getIndexUserInfo(userId);
+        return R.ok().data("userIndexVO", userIndexVo);
     }
 }
 
